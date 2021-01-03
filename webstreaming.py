@@ -101,6 +101,17 @@ def generate():
 		yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
 			bytearray(encodedImage) + b'\r\n')
 
+def grab_video():
+	global vs, outputFrame, lock
+
+	while True:
+		frame = vs.read()
+		frame = imutils.resize(frame, width=800, inter=cv2.INTER_NEAREST)
+
+		with lock:
+			outputFrame = frame.copy()
+		time.sleep(1 / 30)
+
 @app.route("/video_feed")
 def video_feed():
 	# return the response generated along with the specific media
@@ -122,15 +133,23 @@ if __name__ == '__main__':
 		help="# of frames used to construct the background model")
 	ap.add_argument("-d", "--debug", action='store_true',
 		help="Debug mode")
+	ap.add_argument("-s", "--stream", action='store_true',
+		help="Use direct streaming mode without motion detection. Good for slow systems.")
 	args = vars(ap.parse_args())
 
 	DebugMode=args["debug"]
 
-	# start a thread that will perform motion detection
-	t = threading.Thread(target=detect_motion, args=(
-		args["frame_count"],))
-	t.daemon = True
-	t.start()
+	if args["stream"]:
+		t = threading.Thread(target=grab_video)
+		t.daemon = True
+		t.start()
+	else:
+		# start a thread that will perform motion detection
+		t = threading.Thread(target=detect_motion, args=(
+			args["frame_count"],))
+		t.daemon = True
+		t.start()
+
 	# start the flask app
 	app.run(host=args["ip"], port=args["port"], debug=DebugMode,
 		threaded=True, use_reloader=False)
