@@ -120,10 +120,11 @@ if __name__ == '__main__':
 		help="ephemeral port number of the server (1024 to 65535)")
 	ap.add_argument("-f", "--frame-count", type=int, default=32,
 		help="# of frames used to construct the background model")
-#	ap.add_argument('--debug', default=False, action=argparse.BooleanOptionalAction)
+	ap.add_argument("-d", "--debug", action='store_true',
+		help="Debug mode")
 	args = vars(ap.parse_args())
 
-	DebugMode=False #args["debug"]
+	DebugMode=args["debug"]
 
 	# start a thread that will perform motion detection
 	t = threading.Thread(target=detect_motion, args=(
