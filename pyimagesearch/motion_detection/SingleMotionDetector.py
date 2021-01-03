@@ -22,8 +22,8 @@ class SingleMotionDetector:
 		thresh = cv2.threshold(delta, tVal, 255, cv2.THRESH_BINARY)[1]
 
 		# perform a series of erosions and dilations to remove small blobs
-		thresh = cv2.erode(thresh, None, iterations=2)
-		thresh = cv2.dilate(thresh, None, iterations=2)
+		thresh = cv2.erode(thresh, None, iterations=1)
+		thresh = cv2.dilate(thresh, None, iterations=1)
 
 		# find contours in the thresholded image and initialize the
 		# minimum and maximum bounding box regions for motion
