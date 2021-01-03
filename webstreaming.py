@@ -46,7 +46,7 @@ def detect_motion(frameCount):
 		# read the next frame from the video stream, resize it,
 		# convert the frame to grayscale, and blur it
 		frame = vs.read()
-		frame = imutils.resize(frame, width=800)
+		frame = imutils.resize(frame, width=800, inter=cv2.INTER_NEAREST)
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		gray = cv2.GaussianBlur(gray, (7, 7), 0)
 
@@ -120,10 +120,10 @@ if __name__ == '__main__':
 		help="ephemeral port number of the server (1024 to 65535)")
 	ap.add_argument("-f", "--frame-count", type=int, default=32,
 		help="# of frames used to construct the background model")
-	ap.add_argument('--debug', default=False, action=argparse.BooleanOptionalAction)
+#	ap.add_argument('--debug', default=False, action=argparse.BooleanOptionalAction)
 	args = vars(ap.parse_args())
 
-	DebugMode=args["debug"]
+	DebugMode=False #args["debug"]
 
 	# start a thread that will perform motion detection
 	t = threading.Thread(target=detect_motion, args=(

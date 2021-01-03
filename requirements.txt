@@ -1,4 +1,4 @@
 flask
 imutils
 numpy==1.19.3
-opencv-contrib-python
+opencv-contrib-python==4.1.0.25
