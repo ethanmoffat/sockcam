@@ -4,7 +4,7 @@
     // Header of the page (<h1> tag)
     "pageHeader": "sock cam",
     // Stylesheet to use (null for none)
-    "styleSheet": null,
+    "styleSheet": "styles.css",
     // Information objects rendered as a header/data pair
     "info": [
         {

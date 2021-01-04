@@ -2,6 +2,9 @@
   <head>
     <title>{{ pageTitle }}</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    {% if styleSheet %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename=styleSheet) }}">
+    {% endif %}
   </head>
   <body>
     <h1>{{ pageHeader }}</h1>

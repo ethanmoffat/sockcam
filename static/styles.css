@@ -1,0 +1,13 @@
+h1, h4 {
+    text-transform: lowercase;
+}
+
+body {
+    background-color: gray;
+    color: black;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+p {
+    font-size: 10pt;
+}

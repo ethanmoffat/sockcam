@@ -38,11 +38,13 @@ def index():
 
 		pageTitle = data["pageTitle"]
 		pageHeader = data["pageHeader"]
+		styleSheet = data["styleSheet"]
 		info = dict(map(lambda di : (di["title"], di["data"]), data["info"]))
 
 		return render_template("index.html",
 			pageTitle = pageTitle,
 			pageHeader = pageHeader,
+			styleSheet = styleSheet,
 			info = info)
 
 def detect_motion(frameCount):
