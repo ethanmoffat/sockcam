@@ -1,0 +1,10 @@
+{
+    // Title of the page (<title> tag)
+    "pageTitle": "",
+    // Header of the page (<h1> tag)
+    "pageHeader": "",
+    // Stylesheet to use (null for none)
+    "styleSheet": null,
+    // Information objects rendered as a header/data pair
+    "info": []
+}

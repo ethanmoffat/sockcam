@@ -1,0 +1,35 @@
+{
+    // Title of the page (<title> tag)
+    "pageTitle": "Fish friends",
+    // Header of the page (<h1> tag)
+    "pageHeader": "sock cam",
+    // Stylesheet to use (null for none)
+    "styleSheet": null,
+    // Information objects rendered as a header/data pair
+    "info": [
+        {
+            "title": "What is Sock?",
+            "data": "Sock is a common variety goldfish. He was a prize at an event in June 2009, so he is at least 11 and a half years old as of the beginning of 2021. He is between 10-12 inches long. He started out at about an inch long!"
+        },
+        {
+            "title": "Why are there two fish?",
+            "data": "Glad you asked! Sock recently got a brother from our local fish store. He is also a common variety goldfish, aptly named Shoe. We are guessing he is 3-5 years old based on his size."
+        },
+        {
+            "title": "Why doesn't Shoe come closer to the camera?",
+            "data": "Shoe is a bully so he is in fish jail on the other side of the tank."
+        },
+        {
+            "title": "Did you just assume their genders?!?!?",
+            "data": "Both fish have breeding spots indicating that they are males. So, no."
+        },
+        {
+            "title": "Why is the video feed so choppy?",
+            "data": "This is running on a Raspberry Pi Model B from like 2012. It's not a very powerful server."
+        },
+        {
+            "title": "Why is the video feed dark/black?",
+            "data": "It is nighttime. Fish need to sleep too!"
+        }
+    ]
+}

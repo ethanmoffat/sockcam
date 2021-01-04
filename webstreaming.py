@@ -9,8 +9,11 @@ import datetime
 import imutils
 import time
 import cv2
+import json
+from jsmin import jsmin
 
 DebugMode=False
+DataFile="data/data.jsonc"
 
 # initialize the output frame and a lock used to ensure thread-safe
 # exchanges of the output frames (useful when multiple browsers/tabs
@@ -24,13 +27,23 @@ app = Flask(__name__)
 # initialize the video stream and allow the camera sensor to
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
-vs = VideoStream(src=0).start()
+vs = VideoStream(src=0, framerate=60).start()
 time.sleep(2.0)
 
 @app.route("/")
 def index():
-	# return the rendered template
-	return render_template("index.html")
+	with open(DataFile, "r") as dataFileObj:
+		minDataFile = jsmin(dataFileObj.read())
+		data = json.loads(minDataFile)
+
+		pageTitle = data["pageTitle"]
+		pageHeader = data["pageHeader"]
+		info = dict(map(lambda di : (di["title"], di["data"]), data["info"]))
+
+		return render_template("index.html",
+			pageTitle = pageTitle,
+			pageHeader = pageHeader,
+			info = info)
 
 def detect_motion(frameCount):
 	# grab global references to the video stream, output frame, and
@@ -135,9 +148,12 @@ if __name__ == '__main__':
 		help="Debug mode")
 	ap.add_argument("-s", "--stream", action='store_true',
 		help="Use direct streaming mode without motion detection. Good for slow systems.")
+	ap.add_argument("--datafile", type=str, default="data/data.jsonc",
+		help="path to data file (defaults to data/data.jsonc)")
 	args = vars(ap.parse_args())
 
 	DebugMode=args["debug"]
+	DataFile=args["datafile"]
 
 	if args["stream"]:
 		t = threading.Thread(target=grab_video)

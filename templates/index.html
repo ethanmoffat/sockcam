@@ -1,23 +1,15 @@
 <html>
   <head>
-    <title>Fish friends</title>
+    <title>{{ pageTitle }}</title>
   </head>
   <body>
-    <h1>sock cam</h1>
+    <h1>{{ pageHeader }}</h1>
     <center>
       <img src="{{ url_for('video_feed') }}">
     </center>
-    <h4>What is Sock?</h4>
-    <p>Sock is a common variety goldfish. He was a prize at an event in June 2009, so he is at least 11 and a half years old as of the beginning of 2021. He is between 10-12 inches long. He started out at about an inch long!</p>
-    <h4>Why are there two fish?</h4>
-    <p>Glad you asked! Sock recently got a brother from our local fish store. He is also a common variety goldfish, aptly named Shoe. We are guessing he is 3-5 years old based on his size.</p>
-    <h4>Why doesn't Shoe come closer to the camera?</h4>
-    <p>Shoe is a bully so he is in fish jail on the other side of the tank.</p>
-    <h4>Did you just assume their genders?!?!?</h4>
-    <p>Both fish have breeding spots indicating that they are males. So, no.</p>
-    <h4>Why is the video feed so choppy?</h4>
-    <p>This is running on a Raspberry Pi Model B from like 2012. It's not a very powerful server.</p>
-    <h4>Why is the video feed dark/black?</h4>
-    <p>It is nighttime. Fish need to sleep too!</p>
+    {% for title, data in info.items() %}
+    <h4>{{ title }}</h1>
+    <p>{{ data }}</p>
+    {% endfor %}
   </body>
 </html>
