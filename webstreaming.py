@@ -29,6 +29,12 @@ peopleCount = 0
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins='*')
 
+# initialize the video stream and allow the camera sensor to
+# warmup
+#vs = VideoStream(usePiCamera=1).start()
+vs = VideoStream(src=0, framerate=60).start()
+time.sleep(2.0)
+
 @socketio.on('connect')
 def my_connect():
 	global peopleAreWatching
@@ -51,29 +57,6 @@ def my_disconnect():
 		peopleAreWatching.acquire()
 
 	emit('count_change', {'data': peopleCount}, broadcast=True)
-
-# initialize the video stream and allow the camera sensor to
-# warmup
-#vs = VideoStream(usePiCamera=1).start()
-vs = VideoStream(src=0, framerate=60).start()
-time.sleep(2.0)
-
-@app.route("/")
-def index():
-	with open(DataFile, "r") as dataFileObj:
-		minDataFile = jsmin(dataFileObj.read())
-		data = json.loads(minDataFile)
-
-		pageTitle = data["pageTitle"]
-		pageHeader = data["pageHeader"]
-		styleSheet = data["styleSheet"]
-		info = dict(map(lambda di : (di["title"], di["data"]), data["info"]))
-
-		return render_template("index.html",
-			pageTitle = pageTitle,
-			pageHeader = pageHeader,
-			styleSheet = styleSheet,
-			info = info)
 
 def detect_motion(frameCount):
 	# grab global references to the video stream, output frame, and
@@ -161,6 +144,23 @@ def generate():
 		# yield the output frame in the byte format
 		yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
 			bytearray(encodedImage) + b'\r\n')
+
+@app.route("/")
+def index():
+	with open(DataFile, "r") as dataFileObj:
+		minDataFile = jsmin(dataFileObj.read())
+		data = json.loads(minDataFile)
+
+		pageTitle = data["pageTitle"]
+		pageHeader = data["pageHeader"]
+		styleSheet = data["styleSheet"]
+		info = dict(map(lambda di : (di["title"], di["data"]), data["info"]))
+
+		return render_template("index.html",
+			pageTitle = pageTitle,
+			pageHeader = pageHeader,
+			styleSheet = styleSheet,
+			info = info)
 
 @app.route("/video_feed")
 def video_feed():
