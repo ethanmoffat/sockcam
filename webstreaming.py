@@ -29,18 +29,13 @@ peopleCount = 0
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins='*')
 
-# initialize the video stream and allow the camera sensor to
-# warmup
-#vs = VideoStream(usePiCamera=1).start()
-vs = VideoStream(src=0, framerate=60).start()
-time.sleep(2.0)
-
 @socketio.on('connect')
 def my_connect():
-	global peopleAreWatching
-	global peopleCount
+	global peopleAreWatching, peopleCount, vs
 
 	if peopleCount == 0:
+		vs = VideoStream(src=0, framerate=60).start()
+		time.sleep(2)
 		peopleAreWatching.release()
 
 	peopleCount = peopleCount + 1
@@ -48,13 +43,18 @@ def my_connect():
 
 @socketio.on('disconnect')
 def my_disconnect():
-	global peopleAreWatching
-	global peopleCount
+	global peopleAreWatching, peopleCount, vs, outputFrame
 
 	peopleCount = peopleCount - 1
 	if peopleCount <= 0:
 		peopleCount = 0
-		peopleAreWatching.acquire()
+		peopleAreWatching.acquire(blocking=True)
+
+		vs.stop()
+		del vs
+
+		with lock:
+			outputFrame = None
 
 	emit('count_change', {'data': peopleCount}, broadcast=True)
 
@@ -69,10 +69,12 @@ def detect_motion(frameCount):
 
 	# loop over frames from the video stream
 	while True:
-		peopleAreWatching.acquire(blocking=True)
 		# read the next frame from the video stream, resize it,
 		# convert the frame to grayscale, and blur it
+		peopleAreWatching.acquire(blocking=True)
 		frame = vs.read()
+		peopleAreWatching.release()
+
 		frame = imutils.resize(frame, width=800, inter=cv2.INTER_NEAREST)
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		gray = cv2.GaussianBlur(gray, (7, 7), 0)
@@ -108,22 +110,19 @@ def detect_motion(frameCount):
 		with lock:
 			outputFrame = frame.copy()
 
-		peopleAreWatching.release()
-
 def grab_video():
 	global vs, outputFrame, lock, peopleAreWatching
 
 	while True:
 		peopleAreWatching.acquire(blocking=True)
-
 		frame = vs.read()
+		peopleAreWatching.release()
+
 		frame = imutils.resize(frame, width=800, inter=cv2.INTER_NEAREST)
 
 		with lock:
 			outputFrame = frame.copy()
 		time.sleep(1 / 30)
-
-		peopleAreWatching.release()
 
 def generate():
 	# grab global references to the output frame and lock variables
@@ -171,8 +170,6 @@ def video_feed():
 
 # check to see if this is the main thread of execution
 if __name__ == '__main__':
-	DebugMode
-
 	# construct the argument parser and parse command line arguments
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-i", "--ip", type=str, required=True,
@@ -207,4 +204,5 @@ if __name__ == '__main__':
 	socketio.run(app, host=args["ip"], port=args["port"], debug=DebugMode, use_reloader=DebugMode)
 
 # release the video stream pointer
-vs.stop()
+if "vs" in globals():
+	vs.stop()
