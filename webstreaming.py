@@ -3,6 +3,7 @@ from imutils.video import VideoStream
 from flask import Response
 from flask import Flask
 from flask import render_template
+from flask_socketio import SocketIO, emit
 import threading
 import argparse
 import datetime
@@ -21,8 +22,35 @@ DataFile="data/data.jsonc"
 outputFrame = None
 lock = threading.Lock()
 
+peopleAreWatching = threading.Semaphore(0)
+peopleCount = 0
+
 # initialize a flask object
 app = Flask(__name__)
+socketio = SocketIO(app)
+
+@socketio.on('connect')
+def my_connect():
+	global peopleAreWatching
+	global peopleCount
+
+	if peopleCount == 0:
+		peopleAreWatching.release()
+
+	peopleCount = peopleCount + 1
+	emit('count_change', {'data': peopleCount}, broadcast=True)
+
+@socketio.on('disconnect')
+def my_disconnect():
+	global peopleAreWatching
+	global peopleCount
+
+	peopleCount = peopleCount - 1
+	if peopleCount <= 0:
+		peopleCount = 0
+		peopleAreWatching.acquire()
+
+	emit('count_change', {'data': peopleCount}, broadcast=True)
 
 # initialize the video stream and allow the camera sensor to
 # warmup
@@ -50,7 +78,7 @@ def index():
 def detect_motion(frameCount):
 	# grab global references to the video stream, output frame, and
 	# lock variables
-	global vs, outputFrame, lock
+	global vs, outputFrame, lock, peopleAreWatching
 	# initialize the motion detector and the total number of frames
 	# read thus far
 	md = SingleMotionDetector(accumWeight=0.1)
@@ -58,6 +86,7 @@ def detect_motion(frameCount):
 
 	# loop over frames from the video stream
 	while True:
+		peopleAreWatching.acquire(blocking=True)
 		# read the next frame from the video stream, resize it,
 		# convert the frame to grayscale, and blur it
 		frame = vs.read()
@@ -96,6 +125,23 @@ def detect_motion(frameCount):
 		with lock:
 			outputFrame = frame.copy()
 
+		peopleAreWatching.release()
+
+def grab_video():
+	global vs, outputFrame, lock, peopleAreWatching
+
+	while True:
+		peopleAreWatching.acquire(blocking=True)
+
+		frame = vs.read()
+		frame = imutils.resize(frame, width=800, inter=cv2.INTER_NEAREST)
+
+		with lock:
+			outputFrame = frame.copy()
+		time.sleep(1 / 30)
+
+		peopleAreWatching.release()
+
 def generate():
 	# grab global references to the output frame and lock variables
 	global outputFrame, lock
@@ -115,17 +161,6 @@ def generate():
 		# yield the output frame in the byte format
 		yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
 			bytearray(encodedImage) + b'\r\n')
-
-def grab_video():
-	global vs, outputFrame, lock
-
-	while True:
-		frame = vs.read()
-		frame = imutils.resize(frame, width=800, inter=cv2.INTER_NEAREST)
-
-		with lock:
-			outputFrame = frame.copy()
-		time.sleep(1 / 30)
 
 @app.route("/video_feed")
 def video_feed():
@@ -169,8 +204,7 @@ if __name__ == '__main__':
 		t.start()
 
 	# start the flask app
-	app.run(host=args["ip"], port=args["port"], debug=DebugMode,
-		threaded=True, use_reloader=False)
+	socketio.run(app, host=args["ip"], port=args["port"], debug=DebugMode, use_reloader=DebugMode)
 
 # release the video stream pointer
 vs.stop()

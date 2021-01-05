@@ -5,11 +5,16 @@
     {% if styleSheet %}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename=styleSheet) }}">
     {% endif %}
+    <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
   </head>
   <body>
     <h1>{{ pageHeader }}</h1>
     <center>
       <img src="{{ url_for('video_feed') }}">
+      <p>
+        <div id="count">People watching: --</div>
+      </p>
     </center>
     {% for title, data in info.items() %}
     <h4>{{ title }}</h1>
