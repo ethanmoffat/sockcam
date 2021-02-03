@@ -10,15 +10,18 @@
   </head>
   <body>
     <h1>{{ pageHeader }}</h1>
-    <center>
+    <div class="center">
       <img src="{{ url_for('video_feed') }}">
       <p>
         <div id="count">People watching: --</div>
       </p>
-    </center>
+    </div>
     {% for title, data in info.items() %}
     <h4>{{ title }}</h1>
     <p>{{ data }}</p>
     {% endfor %}
+    <div class="center">
+      <small><a href="https://www.github.com/ethanmoffat/sockcam">https://www.github.com/ethanmoffat/sockcam</a></small>
+    </div>
   </body>
 </html>

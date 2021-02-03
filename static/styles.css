@@ -11,3 +11,7 @@ body {
 p {
     font-size: 10pt;
 }
+
+div.center {
+    text-align: center;
+}
